@@ -1,0 +1,31 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.3'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'com.nsmall'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation (group: 'org.axonframework', name: 'axon-spring-boot-starter', version: "4.5.8")
+	implementation group: 'org.axonframework', name: 'axon-configuration', version: "4.5.8"
+	implementation group: 'com.thoughtworks.xstream', name: 'xstream', version: "1.4.17"	
+	implementation project(':starter')
+	compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation group: 'com.oracle.database.jdbc', name: 'ojdbc8', version: '21.1.0.0'	
+	implementation "com.fasterxml.jackson.core:jackson-databind:2.13.1"
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

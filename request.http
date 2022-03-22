@@ -1,0 +1,38 @@
+
+### 주문 생성
+POST  http://localhost:8090/orders/
+Content-Type: application/json
+
+{
+    "userId": "test_user_001",
+    "productId" : "7bb7c7f3-d3fb-4dd7-8e44-1280d38167ed",
+    "quantity" : 3
+}
+
+### 상품 등록
+POST  http://localhost:8091/products
+Content-Type: application/json
+
+{
+    "name" : "테스트상품1" ,
+    "image" : "테스트상품1.jpg" ,
+    "description" : "테스트상품1 설명" ,
+    "unitPrice" : 1000,
+    "quantity" : 100
+}
+
+### 상품 수정
+PUT  http://localhost:8091/products/7bb7c7f3-d3fb-4dd7-8e44-1280d38167ed
+Content-Type: application/json
+
+{
+    "name" : "테스트상품1-1" ,
+    "image" : "테스트상품1.jpg" ,
+    "description" : "테스트상품1 설명 수정함" ,
+    "unitPrice" : 1500,
+    "quantity" : 100
+}
+
+### 주문 조회
+GET  http://localhost:8092/orders
+
