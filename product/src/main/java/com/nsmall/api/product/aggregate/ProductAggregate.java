@@ -5,10 +5,12 @@ import org.axonframework.spring.stereotype.Aggregate;
 
 import com.nsmall.api.product.command.ModifyProductCommand;
 import com.nsmall.api.status.ProductStatus;
+import com.nsmall.api.command.product.CancelQuantityCommand;
 import com.nsmall.api.command.product.ChangeQuantityCommand;
 import com.nsmall.api.event.product.ProductCreatedEvent;
 import com.nsmall.api.event.product.ProductModifiedEvent;
 import com.nsmall.api.event.product.ProductQuantityChangedEvent;
+import com.nsmall.api.exception.NotEnoughQuantityException;
 import com.nsmall.api.product.command.CreateProductCommand;
 
 import org.axonframework.commandhandling.CommandHandler;
@@ -16,7 +18,9 @@ import org.axonframework.modelling.command.AggregateLifecycle;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -27,8 +31,10 @@ import java.time.LocalDateTime;
 @Aggregate
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Entity
+@Getter
+@Setter
+@Slf4j
 @Table(name="productInfo")
 public class ProductAggregate {
     @AggregateIdentifier
@@ -101,19 +107,31 @@ public class ProductAggregate {
     protected void handler(ChangeQuantityCommand command) throws InterruptedException {            
         
         if(this.getQuantity() < command.getQuantity()){
-            throw new IllegalArgumentException("상품 재고 부족");
+            throw new NotEnoughQuantityException();
         }else{
-            this.quantity = this.quantity - command.getQuantity();
-        
-            // 수량 변경 이벤트 생성
-            ProductQuantityChangedEvent event = ProductQuantityChangedEvent.builder()
-                .productId(command.getProductId())
-                .orderId(command.getOrderId())
-                .quantity(command.getQuantity())
-                .unitPrice(this.unitPrice)
-                .build();
-
-            AggregateLifecycle.apply(event);
+            this.quantity = this.quantity - command.getQuantity();        
+            applyQuantityChangedEvent();
         }
+    }
+
+    
+    // 수량 취소 명령 처리
+    @CommandHandler
+    protected void handler(CancelQuantityCommand command) throws InterruptedException {            
+        
+        this.quantity = this.quantity + command.getQuantity();        
+        applyQuantityChangedEvent();
+        
+    }
+
+    protected void applyQuantityChangedEvent() {            
+        
+        // 상품 수량 변경 이벤트 생성
+        ProductQuantityChangedEvent event = ProductQuantityChangedEvent.builder()
+            .productId(this.id)
+            .quantity(this.quantity)
+            .build();
+
+        AggregateLifecycle.apply(event);
     }
 }

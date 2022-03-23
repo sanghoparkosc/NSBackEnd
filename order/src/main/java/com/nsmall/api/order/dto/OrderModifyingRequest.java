@@ -1,5 +1,5 @@
 package com.nsmall.api.order.dto;
- 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Builder;
@@ -11,9 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @ToString
 @NoArgsConstructor
-public class OrderCreationRequest {
-    private String userId;
-    private String productId;
+public class OrderModifyingRequest {
     private Integer quantity;
     private String address;
 }

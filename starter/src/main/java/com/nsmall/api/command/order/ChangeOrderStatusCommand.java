@@ -1,24 +1,25 @@
-package com.nsmall.api.order.command;
+package com.nsmall.api.command.order;
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
+import com.nsmall.api.status.OrderStatus;
+
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.Builder;
-import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+@Setter
 @Builder
 @ToString
-public class CreateOrderCommand {
+public class ChangeOrderStatusCommand {
     
     @TargetAggregateIdentifier
     private String orderId;
-    
-    private String userId;
-    private String productId;
-    private Integer quantity;
-    private String address;    
-    
+
+    private OrderStatus orderStatus;
+            
 }

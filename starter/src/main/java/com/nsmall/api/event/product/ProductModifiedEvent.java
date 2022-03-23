@@ -5,12 +5,11 @@ import java.time.LocalDateTime;
 import com.nsmall.api.status.ProductStatus;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import lombok.ToString;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

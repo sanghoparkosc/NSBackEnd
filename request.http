@@ -6,7 +6,17 @@ Content-Type: application/json
 {
     "userId": "test_user_001",
     "productId" : "7bb7c7f3-d3fb-4dd7-8e44-1280d38167ed",
-    "quantity" : 3
+    "quantity" : 1,
+    "address" : "서울시 광진구 자양로26길 97-6 101호"
+}
+
+### 주문 수정
+PUT  http://localhost:8090/orders/8bba5b35-0e84-4478-8036-a2a420dc2c8a
+Content-Type: application/json
+
+{
+    "quantity" : 2,
+    "address" : "서울시 광진구 자양로26길 97-6 101호"
 }
 
 ### 상품 등록

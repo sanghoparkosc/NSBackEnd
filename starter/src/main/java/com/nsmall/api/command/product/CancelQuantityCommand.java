@@ -1,24 +1,22 @@
-package com.nsmall.api.order.command;
+package com.nsmall.api.command.product;
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import lombok.AllArgsConstructor;
-import lombok.ToString;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
 @Builder
 @ToString
-public class CreateOrderCommand {
+public class CancelQuantityCommand {
     
     @TargetAggregateIdentifier
-    private String orderId;
-    
-    private String userId;
     private String productId;
+    
+    private String orderId;
     private Integer quantity;
-    private String address;    
     
 }

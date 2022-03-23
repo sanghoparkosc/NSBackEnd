@@ -1,14 +1,18 @@
 package com.nsmall.api.order.controller;
 
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import lombok.RequiredArgsConstructor;
 
+import com.nsmall.api.command.order.ChangeOrderCommand;
 import com.nsmall.api.order.command.CreateOrderCommand;
 import com.nsmall.api.order.dto.OrderCreationRequest;
+import com.nsmall.api.order.dto.OrderModifyingRequest;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
 
@@ -34,5 +38,18 @@ public class OrderController {
         .build();  
 
         return commandGateway.send(command);
+    }
+
+    @PutMapping("orders/{id}")
+    public String modifyOrder(@PathVariable String id, @RequestBody OrderModifyingRequest orderModifyingRequest) {
+        
+        // 주문 수정 명령
+        ChangeOrderCommand command = ChangeOrderCommand.builder()
+        .orderId(id)
+        .quantity(orderModifyingRequest.getQuantity())
+        .address(orderModifyingRequest.getAddress())
+        .build(); 
+
+        return commandGateway.sendAndWait(command);
     }
 }
