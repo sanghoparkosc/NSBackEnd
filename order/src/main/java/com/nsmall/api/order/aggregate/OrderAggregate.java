@@ -66,15 +66,16 @@ public class OrderAggregate {
         
         // 변경된 값에 따라 event 생성하여 apply 
         OrderChangedEvent event;
-        if (this.quantity != command.getQuantity() && this.address.equals(command.getAddress())){
+        if (!this.quantity.equals(command.getQuantity()) && this.address.equals(command.getAddress())){
             event =  new OrderQuantityChangedEvent(command.getOrderId(), command.getQuantity(), this.orderStatus);
-        }else if (this.quantity == command.getQuantity() && !this.address.equals(command.getAddress())){
+        }else if (this.quantity.equals(command.getQuantity()) && !this.address.equals(command.getAddress())){
             event =  new AddressChangedEvent(command.getOrderId(), command.getAddress());
         }else {
             event =  OrderChangedEvent.builder()
             .orderId(command.getOrderId())
-            .quantity(quantity)
+            .quantity(command.getQuantity())
             .address(command.getAddress())
+            .orderStatus(this.orderStatus)
             .build();  
         }
        

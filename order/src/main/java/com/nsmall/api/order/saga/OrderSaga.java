@@ -17,6 +17,8 @@ import org.axonframework.modelling.saga.EndSaga;
 import com.nsmall.api.command.order.ChangeOrderStatusCommand;
 import com.nsmall.api.command.product.CancelQuantityCommand;
 import com.nsmall.api.command.product.ChangeQuantityCommand;
+import com.nsmall.api.event.order.AddressChangedEvent;
+import com.nsmall.api.event.order.OrderChangedEvent;
 import com.nsmall.api.event.order.OrderCreatedEvent;
 import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
@@ -32,6 +34,7 @@ public class OrderSaga {
     private String orderId;
     private String productId;
     private int currentQuantity;
+    private String currentAddress;
     private OrderStatus currentOrderStatus;
 
     @StartSaga
@@ -41,21 +44,44 @@ public class OrderSaga {
         this.orderId = event.getOrderId();
         this.productId = event.getProductId();
         this.currentQuantity = event.getQuantity();
-        
-        //수량 변경 요청
-        ChangeQuantityCommand command = ChangeQuantityCommand.builder()
-            .orderId(event.getOrderId())
-            .productId(event.getProductId())
-            .quantity(event.getQuantity())
-            .build();
+        this.currentAddress = event.getAddress();        
 
-        sendChangeQuantityCommand(command);
+        sendChangeQuantityCommand();
+
     }    
 
     
     @SagaEventHandler(associationProperty = "orderId")
     protected void on(OrderQuantityChangedEvent event){
+
+        changeQuantity(event);
        
+    } 
+
+    @SagaEventHandler(associationProperty = "orderId")
+    protected void on(AddressChangedEvent event){
+       
+        changeAddress(event);
+
+    } 
+
+    @SagaEventHandler(associationProperty = "orderId")
+    protected void on(OrderChangedEvent event){
+       
+        // 주문수량이 달라졌으면
+        if(this.currentQuantity != event.getQuantity()){
+            changeQuantity(event);
+        }
+
+        // 주소가 달라졌으면
+        if(!this.currentAddress.equals(event.getAddress())){
+            changeAddress(event);
+        }
+       
+    } 
+
+    protected void changeQuantity(OrderChangedEvent event){
+
         // 이미 상품 재고가 차감된 상태에서 주문 수량이 변경된 경우
         if(event.getOrderStatus() == OrderStatus.PRODUCT_CONFIRMED){
             //먼저 기존 재고 보상 필요
@@ -63,20 +89,17 @@ public class OrderSaga {
         }
         
         this.currentQuantity = event.getQuantity();
+        sendChangeQuantityCommand();
+    }
+
+    protected void sendChangeQuantityCommand(){
 
         //수량 변경 요청
         ChangeQuantityCommand command = ChangeQuantityCommand.builder()
-            .orderId(event.getOrderId())
+            .orderId(this.orderId)
             .productId(this.productId)
-            .quantity(currentQuantity)
+            .quantity(this.currentQuantity)
             .build();
-
-        sendChangeQuantityCommand(command);
-       
-    } 
-    
-
-    protected void sendChangeQuantityCommand(ChangeQuantityCommand command){
         
         commandGateway.send(command, 
         new CommandCallback<ChangeQuantityCommand, Object>() {
@@ -105,10 +128,19 @@ public class OrderSaga {
         CancelQuantityCommand command = CancelQuantityCommand.builder()
             .orderId(this.orderId)
             .productId(this.productId)
-            .quantity(currentQuantity)
+            .quantity(this.currentQuantity)
             .build();
 
         commandGateway.sendAndWait(command);
+    }
+
+    protected void changeAddress(OrderChangedEvent event){
+        
+        this.currentAddress = event.getAddress();
+
+        // TODO : 배송 주소 변경 명령
+        
+        
     }
 
     @EndSaga

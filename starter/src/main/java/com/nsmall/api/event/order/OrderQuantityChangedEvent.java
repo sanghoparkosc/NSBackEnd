@@ -4,8 +4,6 @@ import com.nsmall.api.status.OrderStatus;
 
 public class OrderQuantityChangedEvent extends OrderChangedEvent {
     
-    private OrderStatus orderStatus;
-    
     public OrderQuantityChangedEvent(){
 
     }
@@ -16,7 +14,4 @@ public class OrderQuantityChangedEvent extends OrderChangedEvent {
         this.orderStatus = orderStatus;
     }
 
-    public OrderStatus getOrderStatus(){
-        return this.orderStatus;
-    }
 }

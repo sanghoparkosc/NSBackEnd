@@ -32,6 +32,7 @@ public class OrderEventHandler {
         .userId(event.getUserId())
         .productId(event.getProductId())
         .quantity(event.getQuantity())
+        .address(event.getAddress())
         .orderStatus(event.getOrderStatus())
         .regDate(LocalDateTime.now())
         .build();
