@@ -8,10 +8,10 @@ public class OrderQuantityChangedEvent extends OrderChangedEvent {
 
     }
 
-    public OrderQuantityChangedEvent(String orderId, Integer quantity, OrderStatus orderStatus){
+    public OrderQuantityChangedEvent(String orderId, Integer quantity, OrderStatus currentOrderStatus){
         this.orderId = orderId;
         this.quantity = quantity;
-        this.orderStatus = orderStatus;
+        this.currentOrderStatus = currentOrderStatus;
     }
 
 }

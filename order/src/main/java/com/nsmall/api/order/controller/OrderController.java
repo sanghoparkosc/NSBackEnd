@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import lombok.RequiredArgsConstructor;
 
+import com.nsmall.api.command.order.CancelOrderCommand;
 import com.nsmall.api.command.order.ChangeOrderCommand;
 import com.nsmall.api.order.command.CreateOrderCommand;
 import com.nsmall.api.order.dto.OrderCreationRequest;
@@ -48,6 +49,17 @@ public class OrderController {
         .orderId(id)
         .quantity(orderModifyingRequest.getQuantity())
         .address(orderModifyingRequest.getAddress())
+        .build(); 
+
+        return commandGateway.sendAndWait(command);
+    }
+
+    @PutMapping("orders/cancel/{id}")
+    public String cancelOrder(@PathVariable String id) {
+        
+        // 주문 취소 명령
+        CancelOrderCommand command = CancelOrderCommand.builder()
+        .orderId(id)
         .build(); 
 
         return commandGateway.sendAndWait(command);

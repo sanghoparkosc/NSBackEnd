@@ -3,11 +3,15 @@ package com.nsmall.api.order.aggregate;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.spring.stereotype.Aggregate;
 
+import com.nsmall.api.command.order.CancelOrderCommand;
 import com.nsmall.api.command.order.ChangeOrderCommand;
 import com.nsmall.api.command.order.ChangeOrderStatusCommand;
+import com.nsmall.api.command.order.FinishOrderCommand;
 import com.nsmall.api.event.order.AddressChangedEvent;
+import com.nsmall.api.event.order.OrderCanceledEvent;
 import com.nsmall.api.event.order.OrderChangedEvent;
 import com.nsmall.api.event.order.OrderCreatedEvent;
+import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
 import com.nsmall.api.event.order.OrderStatusChangedEvent;
 import com.nsmall.api.order.command.CreateOrderCommand;
@@ -75,7 +79,7 @@ public class OrderAggregate {
             .orderId(command.getOrderId())
             .quantity(command.getQuantity())
             .address(command.getAddress())
-            .orderStatus(this.orderStatus)
+            .currentOrderStatus(this.orderStatus)
             .build();  
         }
        
@@ -117,6 +121,41 @@ public class OrderAggregate {
     @EventSourcingHandler
     protected void on(OrderStatusChangedEvent event){
         this.orderStatus = event.getOrderStatus();
+    } 
+
+
+    // 주문 취소 명령 처리
+    @CommandHandler
+    protected void handler(CancelOrderCommand command){     
+        OrderCanceledEvent event = OrderCanceledEvent.builder()
+            .orderId(command.getOrderId())
+            .currentOrderStatus(this.orderStatus)
+            .build();        
+        
+        AggregateLifecycle.apply(event); 
+    }  
+    
+    // 주문 취소 이벤트소싱 처리
+    @EventSourcingHandler
+    protected void on(OrderCanceledEvent event){
+        this.orderStatus = OrderStatus.CANCELED;
+    } 
+
+
+    // 주문 종료 명령 처리
+    @CommandHandler
+    protected void handler(FinishOrderCommand command){     
+        OrderFinishedEvent event = OrderFinishedEvent.builder()
+            .orderId(command.getOrderId())
+            .build();        
+        
+        AggregateLifecycle.apply(event); 
+    }  
+    
+    // 주문 종료 이벤트소싱 처리
+    @EventSourcingHandler
+    protected void on(OrderFinishedEvent event){
+        this.orderStatus = OrderStatus.FINISHED;
     } 
 
 }

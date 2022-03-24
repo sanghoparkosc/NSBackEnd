@@ -12,9 +12,7 @@ import com.nsmall.api.status.OrderStatus;
 @NoArgsConstructor
 @Builder
 @ToString
-public class OrderChangedEvent {
+public class OrderCanceledEvent {
     protected String orderId;
-    protected Integer quantity;
-    protected String address;
-    protected OrderStatus currentOrderStatus;
+    protected OrderStatus currentOrderStatus;    
 }

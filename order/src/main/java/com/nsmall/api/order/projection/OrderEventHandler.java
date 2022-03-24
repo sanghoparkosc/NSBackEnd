@@ -11,11 +11,14 @@ import java.time.LocalDateTime;
 
 import com.nsmall.api.entity.OrderEntity;
 import com.nsmall.api.event.order.AddressChangedEvent;
+import com.nsmall.api.event.order.OrderCanceledEvent;
 import com.nsmall.api.event.order.OrderChangedEvent;
 import com.nsmall.api.event.order.OrderCreatedEvent;
+import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
 import com.nsmall.api.event.order.OrderStatusChangedEvent;
 import com.nsmall.api.repository.OrderRepository;
+import com.nsmall.api.status.OrderStatus;
 
 @Component
 @RequiredArgsConstructor
@@ -70,5 +73,18 @@ public class OrderEventHandler {
         orderRepository.save(orderEntity);
     }
 
+    @EventHandler
+    protected void on(OrderCanceledEvent event) {        
+        OrderEntity orderEntity = orderRepository.findByOrderId(event.getOrderId());       
+        orderEntity.setOrderStatus(OrderStatus.CANCELED);
+        orderRepository.save(orderEntity);
+    }
+
+    @EventHandler
+    protected void on(OrderFinishedEvent event) {        
+        OrderEntity orderEntity = orderRepository.findByOrderId(event.getOrderId());       
+        orderEntity.setOrderStatus(OrderStatus.FINISHED);
+        orderRepository.save(orderEntity);
+    }
     
 }

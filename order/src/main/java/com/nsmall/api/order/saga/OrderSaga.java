@@ -15,9 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.axonframework.modelling.saga.EndSaga;
 
 import com.nsmall.api.command.order.ChangeOrderStatusCommand;
+import com.nsmall.api.command.order.FinishOrderCommand;
 import com.nsmall.api.command.product.CancelQuantityCommand;
 import com.nsmall.api.command.product.ChangeQuantityCommand;
 import com.nsmall.api.event.order.AddressChangedEvent;
+import com.nsmall.api.event.order.OrderCanceledEvent;
 import com.nsmall.api.event.order.OrderChangedEvent;
 import com.nsmall.api.event.order.OrderCreatedEvent;
 import com.nsmall.api.event.order.OrderFinishedEvent;
@@ -33,7 +35,7 @@ public class OrderSaga {
     
     private String orderId;
     private String productId;
-    private int currentQuantity;
+    private Integer currentQuantity;
     private String currentAddress;
     private OrderStatus currentOrderStatus;
 
@@ -44,7 +46,8 @@ public class OrderSaga {
         this.orderId = event.getOrderId();
         this.productId = event.getProductId();
         this.currentQuantity = event.getQuantity();
-        this.currentAddress = event.getAddress();        
+        this.currentAddress = event.getAddress();
+        this.currentOrderStatus = event.getOrderStatus();
 
         sendChangeQuantityCommand();
 
@@ -69,7 +72,7 @@ public class OrderSaga {
     protected void on(OrderChangedEvent event){
        
         // 주문수량이 달라졌으면
-        if(this.currentQuantity != event.getQuantity()){
+        if(!this.currentQuantity.equals(event.getQuantity())){
             changeQuantity(event);
         }
 
@@ -83,7 +86,7 @@ public class OrderSaga {
     protected void changeQuantity(OrderChangedEvent event){
 
         // 이미 상품 재고가 차감된 상태에서 주문 수량이 변경된 경우
-        if(event.getOrderStatus() == OrderStatus.PRODUCT_CONFIRMED){
+        if(event.getCurrentOrderStatus() == OrderStatus.PRODUCT_READY){
             //먼저 기존 재고 보상 필요
             compensateProductQuantity();
         }
@@ -108,20 +111,24 @@ public class OrderSaga {
             {
 
                 //결과에 따라 주문상태 변경 요청
+                OrderStatus orderStatus;
+                if(commandResultMessage.isExceptional()) {
+                    orderStatus = OrderStatus.PRODUCT_SHORT;
+                }else{
+                    orderStatus = OrderStatus.PRODUCT_READY;
+                }    
                 ChangeOrderStatusCommand changeOrderStatusCommand = ChangeOrderStatusCommand.builder()
                 .orderId(orderId)
+                .orderStatus(orderStatus)
                 .build();
-                if(commandResultMessage.isExceptional()) {
-                    changeOrderStatusCommand.setOrderStatus(OrderStatus.OUT_OF_STOCK);
-                }else{
-                    changeOrderStatusCommand.setOrderStatus(OrderStatus.PRODUCT_CONFIRMED);
-                }    
+                
                 commandGateway.send(changeOrderStatusCommand);     
 
             }
         }); 
     }
 
+    // 상품수량 보상 요청(동기 호출)
     protected void compensateProductQuantity(){      
         
         //기존 수량 취소 요청
@@ -141,12 +148,26 @@ public class OrderSaga {
         // TODO : 배송 주소 변경 명령
         
         
-    }
+    }    
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    protected void on(OrderCanceledEvent event){
+       
+        // 이미 상품 재고가 차감된 상태에서 주문 취소가 된 경우
+        if(event.getCurrentOrderStatus() == OrderStatus.PRODUCT_READY){
+            //기존 재고 보상 필요
+            compensateProductQuantity();
+        }     
+        
+        log.info("#####################   OrderSaga 종료 - orderId : {} , CANCELED   ####################", event.getOrderId());
+       
+    } 
 
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderFinishedEvent event){                
-        log.info("#####################   OrderSaga 종료 - orderId : {}   ####################", event.getOrderId());
+        log.info("#####################   OrderSaga 종료 - orderId : {} , FINISHED  ####################", event.getOrderId());
     }
 
 }
