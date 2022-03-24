@@ -20,7 +20,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -34,7 +33,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Slf4j
 @Table(name="productInfo")
 public class ProductAggregate {
     @AggregateIdentifier

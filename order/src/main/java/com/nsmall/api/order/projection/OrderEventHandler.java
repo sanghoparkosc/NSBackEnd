@@ -77,6 +77,7 @@ public class OrderEventHandler {
     protected void on(OrderCanceledEvent event) {        
         OrderEntity orderEntity = orderRepository.findByOrderId(event.getOrderId());       
         orderEntity.setOrderStatus(OrderStatus.CANCELED);
+        orderEntity.setCancelDate(LocalDateTime.now());
         orderRepository.save(orderEntity);
     }
 

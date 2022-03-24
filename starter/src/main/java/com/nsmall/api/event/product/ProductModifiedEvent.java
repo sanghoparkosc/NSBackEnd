@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import com.nsmall.api.status.ProductStatus;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import lombok.ToString;

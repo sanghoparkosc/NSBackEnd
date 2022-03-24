@@ -4,20 +4,25 @@ POST  http://localhost:8090/orders/
 Content-Type: application/json
 
 {
-    "userId": "test_user_001",
-    "productId" : "7bb7c7f3-d3fb-4dd7-8e44-1280d38167ed",
+    "userId": "test_user_002",
+    "productId" : "80661898-be44-40b6-8539-b33328189220",
     "quantity" : 1,
     "address" : "서울시 광진구 자양로26길 97-6 101호"
 }
 
 ### 주문 수정
-PUT  http://localhost:8090/orders/8bba5b35-0e84-4478-8036-a2a420dc2c8a
+PUT  http://localhost:8090/orders/34fe1936-0578-4a29-8ca8-00a62881e4d5
 Content-Type: application/json
 
 {
     "quantity" : 2,
     "address" : "서울시 광진구 자양로26길 97-6 101호"
 }
+
+### 주문 취소
+PUT  http://localhost:8090/orders/cancel/8205298e-50eb-4cc1-9118-56211eb8a100
+Content-Type: application/json
+
 
 ### 상품 등록
 POST  http://localhost:8091/products
@@ -43,6 +48,11 @@ Content-Type: application/json
     "quantity" : 100
 }
 
-### 주문 조회
-GET  http://localhost:8092/orders
+### 전체 주문리스트 조회
+GET  http://localhost:8100/orders
 
+### orderId로 주문 조회
+GET  http://localhost:8100/orders/9b27837e-3922-4576-96f5-02c87cc8a429
+
+### userId로 주문리스트 조회
+GET  http://localhost:8100/orders/user/test_user_001

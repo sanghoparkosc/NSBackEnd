@@ -1,0 +1,20 @@
+server:
+  port: 8100
+
+spring:
+  application:
+    name: order-query
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    username: C##NSMALL
+    password: 1234
+    driverClassName: oracle.jdbc.driver.OracleDriver
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+axon:
+  serializer:
+    general: xstream
+  axonserver:
+    servers: localhost:8124
