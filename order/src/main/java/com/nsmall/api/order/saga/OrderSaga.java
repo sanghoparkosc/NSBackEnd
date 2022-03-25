@@ -9,13 +9,17 @@ import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.axonframework.modelling.saga.EndSaga;
 
+import com.nsmall.api.command.order.ApplyPaymentResultCommand;
 import com.nsmall.api.command.order.ChangeOrderStatusCommand;
-import com.nsmall.api.command.order.FinishOrderCommand;
 import com.nsmall.api.command.product.CancelQuantityCommand;
 import com.nsmall.api.command.product.ChangeQuantityCommand;
 import com.nsmall.api.event.order.AddressChangedEvent;
@@ -24,6 +28,9 @@ import com.nsmall.api.event.order.OrderChangedEvent;
 import com.nsmall.api.event.order.OrderCreatedEvent;
 import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
+import com.nsmall.api.event.order.PaymentProcessStartedEvent;
+import com.nsmall.api.order.dto.PaymentRequest;
+import com.nsmall.api.order.dto.PaymentResponse;
 import com.nsmall.api.status.OrderStatus;
 
 @Saga
@@ -32,12 +39,14 @@ public class OrderSaga {
     
     @Autowired
     private transient CommandGateway commandGateway;   
+
+    @Autowired
+    private transient RestTemplate restTemplate;
     
     private String orderId;
     private String productId;
     private Integer currentQuantity;
     private String currentAddress;
-    private OrderStatus currentOrderStatus;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -47,7 +56,6 @@ public class OrderSaga {
         this.productId = event.getProductId();
         this.currentQuantity = event.getQuantity();
         this.currentAddress = event.getAddress();
-        this.currentOrderStatus = event.getOrderStatus();
 
         sendChangeQuantityCommand();
 
@@ -149,6 +157,32 @@ public class OrderSaga {
         
         
     }    
+
+    @SagaEventHandler(associationProperty = "orderId")
+    protected void on(PaymentProcessStartedEvent event){
+
+        // 결제 요청 - 외부 서비스(paymentTester.jar 실행)
+        String paymentApiUri = "http://localhost:8200/payment";
+        HttpHeaders headers = new HttpHeaders();
+        PaymentRequest req = PaymentRequest.builder()
+                                .paymentId(event.getPaymentId())
+                                .paymentAmount(event.getPaymentAmount())
+                                .build();
+        HttpEntity<PaymentRequest> entity = new HttpEntity<PaymentRequest>(req ,headers);
+        PaymentResponse res = restTemplate.postForObject(paymentApiUri, entity, PaymentResponse.class);
+        log.info("payment request res = {}", res);
+
+        // 결제 결과 적용 요청
+        ApplyPaymentResultCommand command = ApplyPaymentResultCommand.builder()
+            .orderId(event.getOrderId())
+            .paymentId(event.getPaymentId())
+            .paymentAmount(event.getPaymentAmount())
+            .resultCode(res.getResultCode())
+            .resultMsg(res.getResultMsg())
+            .build();
+
+        commandGateway.sendAndWait(command);
+    } 
 
     @EndSaga
     @SagaEventHandler(associationProperty = "orderId")

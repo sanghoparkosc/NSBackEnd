@@ -15,6 +15,9 @@ import com.nsmall.api.event.order.OrderCreatedEvent;
 import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
 import com.nsmall.api.event.order.OrderStatusChangedEvent;
+import com.nsmall.api.event.order.PaymentFailedEvent;
+import com.nsmall.api.event.order.PaymentProcessStartedEvent;
+import com.nsmall.api.event.order.PaymentSuccededEvent;
 import com.nsmall.api.query.entity.OrderDetailEntity;
 import com.nsmall.api.query.repository.OrderDetailRepository;
 import com.nsmall.api.status.OrderDetailStatus;
@@ -105,6 +108,28 @@ public class OrderEventHandler {
         OrderDetailEntity detailEntity = repository.findById(event.getOrderId()).get();              
         detailEntity.setOrderStatus(OrderDetailStatus.FINISHED);
         detailEntity.setFinishedDate(LocalDateTime.now());
+        repository.save(detailEntity);
+    }
+
+    @EventHandler
+    protected void on(PaymentProcessStartedEvent event) {        
+        OrderDetailEntity detailEntity = repository.findById(event.getOrderId()).get();              
+        detailEntity.setPaymentDate(LocalDateTime.now());
+        repository.save(detailEntity);
+    }
+
+    @EventHandler
+    protected void on(PaymentSuccededEvent event) {    
+        OrderDetailEntity detailEntity = repository.findById(event.getOrderId()).get();              
+        detailEntity.setOrderStatus(OrderDetailStatus.PAYMENT_SUCCEDED);
+        repository.save(detailEntity);
+    }
+
+    @EventHandler
+    protected void on(PaymentFailedEvent event) {        
+        OrderDetailEntity detailEntity = repository.findById(event.getOrderId()).get();              
+        detailEntity.setOrderStatus(OrderDetailStatus.PAYMENT_FAILED);
+        detailEntity.setReason(event.getResultMsg());
         repository.save(detailEntity);
     }
 }

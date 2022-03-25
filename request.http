@@ -5,13 +5,13 @@ Content-Type: application/json
 
 {
     "userId": "test_user_002",
-    "productId" : "80661898-be44-40b6-8539-b33328189220",
-    "quantity" : 1,
+    "productId" : "f26e2f57-ff3a-4874-bf01-4f8510165744",
+    "quantity" : 5,
     "address" : "서울시 광진구 자양로26길 97-6 101호"
 }
 
 ### 주문 수정
-PUT  http://localhost:8090/orders/34fe1936-0578-4a29-8ca8-00a62881e4d5
+PUT  http://localhost:8090/orders/d08abd22-ae63-4bdb-9a91-afd6f3557fe0
 Content-Type: application/json
 
 {
@@ -20,19 +20,28 @@ Content-Type: application/json
 }
 
 ### 주문 취소
-PUT  http://localhost:8090/orders/cancel/8205298e-50eb-4cc1-9118-56211eb8a100
+PUT  http://localhost:8090/orders/cancel/b21d1254-14e8-4080-9a8e-28a113ab9d21
 Content-Type: application/json
 
+
+
+### 주문에 대한 결제 요청
+PUT  http://localhost:8090/orders/payment/344ca2bd-e6da-41de-8440-7cf1e833ed60
+Content-Type: application/json
+
+{
+    "paymentAmount" : 5000
+}
 
 ### 상품 등록
 POST  http://localhost:8091/products
 Content-Type: application/json
 
 {
-    "name" : "테스트상품1" ,
-    "image" : "테스트상품1.jpg" ,
-    "description" : "테스트상품1 설명" ,
-    "unitPrice" : 1000,
+    "name" : "새우깡" ,
+    "image" : "새우깡.jpg" ,
+    "description" : "맛있는 새우가 들어있는 과자" ,
+    "unitPrice" : 500,
     "quantity" : 100
 }
 
@@ -56,3 +65,14 @@ GET  http://localhost:8100/orders/9b27837e-3922-4576-96f5-02c87cc8a429
 
 ### userId로 주문리스트 조회
 GET  http://localhost:8100/orders/user/test_user_001
+
+
+
+### 결제 직접 테스트
+POST  http://localhost:8200/payment
+Content-Type: application/json
+
+{
+    "paymentId" : "00000001" ,
+    "paymentAmount" : 5000
+}

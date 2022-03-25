@@ -17,6 +17,8 @@ import com.nsmall.api.event.order.OrderCreatedEvent;
 import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
 import com.nsmall.api.event.order.OrderStatusChangedEvent;
+import com.nsmall.api.event.order.PaymentFailedEvent;
+import com.nsmall.api.event.order.PaymentSuccededEvent;
 import com.nsmall.api.repository.OrderRepository;
 import com.nsmall.api.status.OrderStatus;
 
@@ -85,6 +87,21 @@ public class OrderEventHandler {
     protected void on(OrderFinishedEvent event) {        
         OrderEntity orderEntity = orderRepository.findByOrderId(event.getOrderId());       
         orderEntity.setOrderStatus(OrderStatus.FINISHED);
+        orderRepository.save(orderEntity);
+    }
+
+    
+    @EventHandler
+    protected void on(PaymentSuccededEvent event) {        
+        OrderEntity orderEntity = orderRepository.findByOrderId(event.getOrderId());       
+        orderEntity.setOrderStatus(OrderStatus.PAYMENT_SUCCEDED);
+        orderRepository.save(orderEntity);
+    }
+
+    @EventHandler
+    protected void on(PaymentFailedEvent event) {        
+        OrderEntity orderEntity = orderRepository.findByOrderId(event.getOrderId());       
+        orderEntity.setOrderStatus(OrderStatus.PAYMENT_FAILED);
         orderRepository.save(orderEntity);
     }
     

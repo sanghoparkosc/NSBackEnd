@@ -8,12 +8,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import com.nsmall.api.command.order.CancelOrderCommand;
 import com.nsmall.api.command.order.ChangeOrderCommand;
+import com.nsmall.api.command.order.ProcessPaymentCommand;
 import com.nsmall.api.order.command.CreateOrderCommand;
 import com.nsmall.api.order.dto.OrderCreationRequest;
 import com.nsmall.api.order.dto.OrderModifyingRequest;
+import com.nsmall.api.order.dto.PaymentProcessingRequest;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
 
@@ -22,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class OrderController {
 
     private final CommandGateway commandGateway;
@@ -42,7 +46,7 @@ public class OrderController {
     }
 
     @PutMapping("orders/{id}")
-    public String modifyOrder(@PathVariable String id, @RequestBody OrderModifyingRequest orderModifyingRequest) {
+    public CompletableFuture<String> modifyOrder(@PathVariable String id, @RequestBody OrderModifyingRequest orderModifyingRequest) {
         
         // 주문 수정 명령
         ChangeOrderCommand command = ChangeOrderCommand.builder()
@@ -55,12 +59,24 @@ public class OrderController {
     }
 
     @PutMapping("orders/cancel/{id}")
-    public String cancelOrder(@PathVariable String id) {
+    public CompletableFuture<String> cancelOrder(@PathVariable String id) {
         
         // 주문 취소 명령
         CancelOrderCommand command = CancelOrderCommand.builder()
         .orderId(id)
         .build(); 
+
+        return commandGateway.sendAndWait(command);
+    }
+
+    @PutMapping("orders/payment/{orderId}")
+    public CompletableFuture<String> processPayment(@PathVariable String orderId, @RequestBody PaymentProcessingRequest paymentProcessingRequest) {
+        
+        // 결제 진행 명령
+        ProcessPaymentCommand command = ProcessPaymentCommand.builder()
+        .orderId(orderId)
+        .paymentAmount(paymentProcessingRequest.getPaymentAmount())
+        .build();
 
         return commandGateway.sendAndWait(command);
     }
