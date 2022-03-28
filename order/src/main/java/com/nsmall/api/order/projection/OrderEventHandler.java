@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
-import com.nsmall.api.entity.OrderEntity;
 import com.nsmall.api.event.order.AddressChangedEvent;
 import com.nsmall.api.event.order.OrderCanceledEvent;
 import com.nsmall.api.event.order.OrderChangedEvent;
@@ -19,7 +18,8 @@ import com.nsmall.api.event.order.OrderQuantityChangedEvent;
 import com.nsmall.api.event.order.OrderStatusChangedEvent;
 import com.nsmall.api.event.order.PaymentFailedEvent;
 import com.nsmall.api.event.order.PaymentSuccededEvent;
-import com.nsmall.api.repository.OrderRepository;
+import com.nsmall.api.order.entity.OrderEntity;
+import com.nsmall.api.order.repository.OrderRepository;
 import com.nsmall.api.status.OrderStatus;
 
 @Component

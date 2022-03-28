@@ -10,6 +10,7 @@ import java.util.UUID;
 import com.nsmall.api.command.order.CancelOrderCommand;
 import com.nsmall.api.command.order.ChangeOrderCommand;
 import com.nsmall.api.command.order.ChangeOrderStatusCommand;
+import com.nsmall.api.command.order.CreateOrderCommand;
 import com.nsmall.api.command.order.FinishOrderCommand;
 import com.nsmall.api.command.order.ProcessPaymentCommand;
 import com.nsmall.api.event.order.AddressChangedEvent;
@@ -20,7 +21,6 @@ import com.nsmall.api.event.order.OrderFinishedEvent;
 import com.nsmall.api.event.order.OrderQuantityChangedEvent;
 import com.nsmall.api.event.order.OrderStatusChangedEvent;
 import com.nsmall.api.event.order.PaymentProcessStartedEvent;
-import com.nsmall.api.order.command.CreateOrderCommand;
 import com.nsmall.api.status.OrderStatus;
 import com.nsmall.api.status.PaymentStatus;
 

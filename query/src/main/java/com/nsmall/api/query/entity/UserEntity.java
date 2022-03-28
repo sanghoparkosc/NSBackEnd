@@ -1,4 +1,4 @@
-package com.nsmall.api.entity;
+package com.nsmall.api.query.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -6,7 +6,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.nsmall.api.status.PaymentStatus;
+import com.nsmall.api.status.UserStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,22 +18,21 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="paymentInfo")
+@Table(name="userInfo")
 @Builder
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentEntity {
+public class UserEntity {
 
     @Id    
-    private String paymentId;    
-    private String orderId;
-    private String message;
-    private Integer amount; 
+    private String id;    
+    private String password;    
+    private String name;
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status;
-    private LocalDateTime regDate;
+    private UserStatus status;
+    private LocalDateTime regDate; 
     
 }

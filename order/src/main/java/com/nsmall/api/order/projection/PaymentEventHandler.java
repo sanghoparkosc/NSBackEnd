@@ -10,11 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
-import com.nsmall.api.entity.PaymentEntity;
 import com.nsmall.api.event.order.PaymentFailedEvent;
 import com.nsmall.api.event.order.PaymentProcessStartedEvent;
 import com.nsmall.api.event.order.PaymentSuccededEvent;
-import com.nsmall.api.repository.PaymentRepository;
+import com.nsmall.api.order.entity.PaymentEntity;
+import com.nsmall.api.order.repository.PaymentRepository;
 import com.nsmall.api.status.PaymentStatus;
 
 @Component

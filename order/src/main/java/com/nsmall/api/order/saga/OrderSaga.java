@@ -11,7 +11,7 @@ import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import com.nsmall.api.command.order.ApplyPaymentResultCommand;
 import com.nsmall.api.command.order.ChangeOrderStatusCommand;
 import com.nsmall.api.command.product.CancelQuantityCommand;
 import com.nsmall.api.command.product.ChangeQuantityCommand;
+import com.nsmall.api.constant.PaymentResultCode;
 import com.nsmall.api.event.order.AddressChangedEvent;
 import com.nsmall.api.event.order.OrderCanceledEvent;
 import com.nsmall.api.event.order.OrderChangedEvent;
@@ -33,9 +34,16 @@ import com.nsmall.api.order.dto.PaymentRequest;
 import com.nsmall.api.order.dto.PaymentResponse;
 import com.nsmall.api.status.OrderStatus;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import org.axonframework.deadline.DeadlineManager;
+import org.axonframework.deadline.annotation.DeadlineHandler;
+
+
 @Saga
 @Slf4j
 public class OrderSaga {
+    public static final String PAYMENT_DEADLINE ="payment-processing-deadline";
     
     @Autowired
     private transient CommandGateway commandGateway;   
@@ -43,10 +51,14 @@ public class OrderSaga {
     @Autowired
     private transient RestTemplate restTemplate;
     
+    @Autowired
+    private transient DeadlineManager deadlineManager;  
+
     private String orderId;
     private String productId;
     private Integer currentQuantity;
     private String currentAddress;
+    
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -161,6 +173,9 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     protected void on(PaymentProcessStartedEvent event){
 
+        // 결제 요청 deadline Time 설정  
+        deadlineManager.schedule(Duration.of(5, ChronoUnit.SECONDS), PAYMENT_DEADLINE, event);
+        
         // 결제 요청 - 외부 서비스(paymentTester.jar 실행)
         String paymentApiUri = "http://localhost:8200/payment";
         HttpHeaders headers = new HttpHeaders();
@@ -169,11 +184,15 @@ public class OrderSaga {
                                 .paymentAmount(event.getPaymentAmount())
                                 .build();
         HttpEntity<PaymentRequest> entity = new HttpEntity<PaymentRequest>(req ,headers);
-        PaymentResponse res = restTemplate.postForObject(paymentApiUri, entity, PaymentResponse.class);
-        log.info("payment request res = {}", res);
+        try {
+            PaymentResponse res = restTemplate.postForObject(paymentApiUri, entity, PaymentResponse.class);
+            log.info("payment request res = {}", res);
 
-        // 결제 결과 적용 요청
-        ApplyPaymentResultCommand command = ApplyPaymentResultCommand.builder()
+            // 결제 결과 수신으로 인한 타임아웃 설정 제거 
+            deadlineManager.cancelAll(PAYMENT_DEADLINE);
+
+            // 결제 결과 적용 요청
+            ApplyPaymentResultCommand command = ApplyPaymentResultCommand.builder()
             .orderId(event.getOrderId())
             .paymentId(event.getPaymentId())
             .paymentAmount(event.getPaymentAmount())
@@ -181,7 +200,11 @@ public class OrderSaga {
             .resultMsg(res.getResultMsg())
             .build();
 
-        commandGateway.sendAndWait(command);
+            commandGateway.sendAndWait(command);
+        } catch (ResourceAccessException e){
+            // 일단 DeadlineManager에 의해 처리
+        }
+        
     } 
 
     @EndSaga
@@ -202,6 +225,22 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderFinishedEvent event){                
         log.info("#####################   OrderSaga 종료 - orderId : {} , FINISHED  ####################", event.getOrderId());
+    }
+
+
+    // 결재 요청 타임아웃처리
+    @DeadlineHandler(deadlineName = PAYMENT_DEADLINE)
+    public void onPaymentDeadline(PaymentProcessStartedEvent event){
+        // 결제 결과 실패로 적용 요청
+        ApplyPaymentResultCommand command = ApplyPaymentResultCommand.builder()
+        .orderId(event.getOrderId())
+        .paymentId(event.getPaymentId())
+        .paymentAmount(event.getPaymentAmount())
+        .resultCode(PaymentResultCode.TIMEOUT)
+        .resultMsg("결제 요청 타임아웃")
+        .build();
+
+        commandGateway.sendAndWait(command);
     }
 
 }

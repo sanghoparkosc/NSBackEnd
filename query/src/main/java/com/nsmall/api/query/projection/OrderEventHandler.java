@@ -19,11 +19,11 @@ import com.nsmall.api.event.order.PaymentFailedEvent;
 import com.nsmall.api.event.order.PaymentProcessStartedEvent;
 import com.nsmall.api.event.order.PaymentSuccededEvent;
 import com.nsmall.api.query.entity.OrderDetailEntity;
+import com.nsmall.api.query.entity.UserEntity;
 import com.nsmall.api.query.repository.OrderDetailRepository;
+import com.nsmall.api.query.repository.UserRepository;
 import com.nsmall.api.status.OrderDetailStatus;
 import com.nsmall.api.util.StatusUtil;
-import com.nsmall.api.entity.UserEntity;
-import com.nsmall.api.repository.UserRepository;
 import com.nsmall.api.entity.ProductEntity;
 import com.nsmall.api.repository.ProductRepository;
 import java.util.Optional;
@@ -122,6 +122,7 @@ public class OrderEventHandler {
     protected void on(PaymentSuccededEvent event) {    
         OrderDetailEntity detailEntity = repository.findById(event.getOrderId()).get();              
         detailEntity.setOrderStatus(OrderDetailStatus.PAYMENT_SUCCEDED);
+        detailEntity.setReason("");
         repository.save(detailEntity);
     }
 

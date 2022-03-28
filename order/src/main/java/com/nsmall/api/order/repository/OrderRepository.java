@@ -1,6 +1,6 @@
-package com.nsmall.api.repository;
+package com.nsmall.api.order.repository;
 
-import com.nsmall.api.entity.OrderEntity;
+import com.nsmall.api.order.entity.OrderEntity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

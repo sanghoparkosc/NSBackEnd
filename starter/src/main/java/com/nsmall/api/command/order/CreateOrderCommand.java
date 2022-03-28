@@ -1,4 +1,4 @@
-package com.nsmall.api.order.command;
+package com.nsmall.api.command.order;
 
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 

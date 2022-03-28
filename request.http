@@ -26,7 +26,7 @@ Content-Type: application/json
 
 
 ### 주문에 대한 결제 요청
-PUT  http://localhost:8090/orders/payment/344ca2bd-e6da-41de-8440-7cf1e833ed60
+PUT  http://localhost:8090/orders/payment/8278b3ef-3e42-40fa-b2b4-9001a7523dee
 Content-Type: application/json
 
 {
